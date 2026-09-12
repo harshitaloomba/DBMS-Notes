@@ -1,0 +1,2207 @@
+# DBMS Notes
+
+## 1. Relational Model
+
+### 1.1 What is a Database?
+
+- A **database** is an organized collection of data.
+- Example: A college database may store:
+  - Student details
+  - Course details
+  - Faculty details
+  - Marks
+  - Attendance
+
+### 1.2 What is DBMS?
+
+- **DBMS = Database Management System**
+- Software used to:
+  - Store data
+  - Retrieve data
+  - Insert data
+  - Update data
+  - Delete data
+  - Manage security
+  - Handle multiple users
+  - Recover data after failures
+
+Examples:
+- MySQL
+- PostgreSQL
+- Oracle
+- SQL Server
+- MongoDB (NoSQL DBMS)
+
+---
+
+## 2. Relational Model
+
+A **relational database** stores data in the form of **tables**.
+
+Example:
+
+### Student Table
+
+| student_id | name | age | dept |
+|---|---|---:|---|
+| 101 | Alice | 20 | CSE |
+| 102 | Bob | 21 | ECE |
+| 103 | John | 20 | CSE |
+
+### 2.1 Table
+
+- A table stores related data.
+- In relational database terminology, a table is also called a **relation**.
+
+### 2.2 Row
+
+- A row represents one complete record.
+- Also called a **tuple**.
+
+Example:
+
+```text
+101 | Alice | 20 | CSE
+```
+
+is one row/tuple.
+
+### 2.3 Column
+
+- A column represents one property/attribute.
+- Also called an **attribute**.
+
+Example:
+
+```text
+student_id
+name
+age
+dept
+```
+
+are columns/attributes.
+
+### 2.4 Relationships
+
+Relationships show how tables are connected.
+
+Example:
+
+```text
+Student
+student_id
+name
+dept_id
+```
+
+```text
+Department
+dept_id
+dept_name
+```
+
+`Student.dept_id` can refer to `Department.dept_id`.
+
+---
+
+# 3. Keys
+
+Keys are attributes used to **identify records** and establish relationships between tables.
+
+## 3.1 Super Key
+
+A **Super Key** is any set of one or more attributes that can uniquely identify a row.
+
+Example:
+
+```text
+Student(student_id, email, name)
+```
+
+Possible Super Keys:
+
+```text
+student_id
+email
+student_id + name
+email + name
+student_id + email
+```
+
+Important:
+
+- A Super Key may contain **extra/unnecessary attributes**.
+
+---
+
+## 3.2 Candidate Key
+
+A **Candidate Key** is a **minimal Super Key**.
+
+It uniquely identifies a row and contains no unnecessary attribute.
+
+Example:
+
+```text
+Student(student_id, email, name)
+```
+
+If both `student_id` and `email` are unique:
+
+```text
+student_id → Candidate Key
+email      → Candidate Key
+```
+
+---
+
+## 3.3 Primary Key
+
+The **Primary Key** is the candidate key selected to uniquely identify records.
+
+Example:
+
+```sql
+CREATE TABLE Student (
+    student_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100)
+);
+```
+
+Properties:
+
+- Unique
+- Cannot contain `NULL`
+- One primary key constraint per table
+- It can consist of multiple columns
+
+---
+
+## 3.4 Alternate Key
+
+Candidate keys that are **not selected as the Primary Key** are called Alternate Keys.
+
+Example:
+
+```text
+Candidate Keys:
+- student_id
+- email
+
+Primary Key:
+- student_id
+
+Alternate Key:
+- email
+```
+
+---
+
+## 3.5 Foreign Key
+
+A **Foreign Key** is a column that refers to a key in another table.
+
+Example:
+
+### Department
+
+| dept_id | dept_name |
+|---|---|
+| 1 | CSE |
+| 2 | ECE |
+
+### Student
+
+| student_id | name | dept_id |
+|---|---|---:|
+| 101 | Alice | 1 |
+| 102 | Bob | 2 |
+
+Here:
+
+```text
+Student.dept_id → Department.dept_id
+```
+
+Purpose:
+
+- Connect tables
+- Maintain **referential integrity**
+- Prevent invalid references
+
+---
+
+## 3.6 Composite Key
+
+A **Composite Key** uses two or more columns together to uniquely identify a row.
+
+Example:
+
+### Enrollment
+
+| student_id | course_id | marks |
+|---|---|---:|
+| 101 | C01 | 90 |
+| 101 | C02 | 85 |
+| 102 | C01 | 88 |
+
+Neither `student_id` nor `course_id` is unique alone.
+
+Together:
+
+```text
+(student_id, course_id)
+```
+
+uniquely identifies an enrollment.
+
+```sql
+PRIMARY KEY (student_id, course_id)
+```
+
+---
+
+## Key Summary
+
+| Key | Meaning |
+|---|---|
+| Super Key | Any attribute set that uniquely identifies a row |
+| Candidate Key | Minimal Super Key |
+| Primary Key | Candidate Key selected as main key |
+| Alternate Key | Candidate Key not selected as Primary Key |
+| Foreign Key | Refers to a key in another table |
+| Composite Key | Key made using multiple columns |
+
+### Easy Memory
+
+```text
+Super Key
+   ↓ remove unnecessary attributes
+Candidate Key
+   ↓ choose one
+Primary Key
+```
+
+---
+
+# 4. SQL
+
+**SQL = Structured Query Language**
+
+SQL is used to interact with relational databases.
+
+---
+
+## 4.1 SELECT
+
+Used to retrieve data.
+
+```sql
+SELECT * FROM Employee;
+```
+
+Select specific columns:
+
+```sql
+SELECT emp_id, emp_name
+FROM Employee;
+```
+
+---
+
+## 4.2 INSERT
+
+Used to add new records.
+
+```sql
+INSERT INTO Employee (emp_id, emp_name, dept_id)
+VALUES (101, 'Alice', 10);
+```
+
+---
+
+## 4.3 UPDATE
+
+Used to modify existing records.
+
+```sql
+UPDATE Employee
+SET dept_id = 20
+WHERE emp_id = 101;
+```
+
+### Important
+
+Always be careful with `UPDATE` without `WHERE`.
+
+```sql
+UPDATE Employee
+SET dept_id = 20;
+```
+
+This updates **every row**.
+
+---
+
+## 4.4 DELETE
+
+Used to remove records.
+
+```sql
+DELETE FROM Employee
+WHERE emp_id = 101;
+```
+
+Without `WHERE`:
+
+```sql
+DELETE FROM Employee;
+```
+
+all rows are deleted.
+
+---
+
+## 4.5 WHERE
+
+Used to filter individual rows.
+
+```sql
+SELECT *
+FROM Employee
+WHERE dept_id = 10;
+```
+
+Example:
+
+```sql
+SELECT *
+FROM Employee
+WHERE salary > 50000;
+```
+
+---
+
+## 4.6 GROUP BY
+
+Used to group rows having the same value.
+
+Example:
+
+```sql
+SELECT dept_id, COUNT(*) AS employee_count
+FROM Employee
+GROUP BY dept_id;
+```
+
+Result:
+
+| dept_id | employee_count |
+|---:|---:|
+| 10 | 5 |
+| 20 | 3 |
+| 30 | 7 |
+
+Common aggregate functions:
+
+```text
+COUNT()
+SUM()
+AVG()
+MIN()
+MAX()
+```
+
+---
+
+## 4.7 HAVING
+
+Used to filter **groups** after `GROUP BY`.
+
+Example:
+
+```sql
+SELECT dept_id, COUNT(*) AS employee_count
+FROM Employee
+GROUP BY dept_id
+HAVING COUNT(*) > 5;
+```
+
+This returns only departments having more than 5 employees.
+
+### WHERE vs HAVING
+
+| WHERE | HAVING |
+|---|---|
+| Filters rows | Filters groups |
+| Before GROUP BY | After GROUP BY |
+| Usually does not use aggregate result | Commonly used with aggregate functions |
+
+Memory:
+
+```text
+WHERE → rows
+HAVING → groups
+```
+
+---
+
+## 4.8 ORDER BY
+
+Used to sort results.
+
+Ascending:
+
+```sql
+SELECT *
+FROM Employee
+ORDER BY salary ASC;
+```
+
+Descending:
+
+```sql
+SELECT *
+FROM Employee
+ORDER BY salary DESC;
+```
+
+---
+
+## SQL Query Execution Order
+
+A useful conceptual order is:
+
+```text
+FROM
+  ↓
+WHERE
+  ↓
+GROUP BY
+  ↓
+HAVING
+  ↓
+SELECT
+  ↓
+ORDER BY
+```
+
+Note: This is the **logical processing order**, not necessarily the physical execution plan used internally by the database.
+
+---
+
+# 5. Joins
+
+A **JOIN** combines rows from multiple tables using a related column or condition.
+
+Example tables:
+
+### Employee
+
+| emp_id | emp_name | dept_id |
+|---:|---|---:|
+| 1 | Alice | 10 |
+| 2 | Bob | 20 |
+| 3 | John | 30 |
+
+### Department
+
+| dept_id | dept_name |
+|---:|---|
+| 10 | HR |
+| 20 | IT |
+| 40 | Finance |
+
+---
+
+## 5.1 INNER JOIN
+
+Returns only matching rows from both tables.
+
+```sql
+SELECT e.emp_name, d.dept_name
+FROM Employee e
+INNER JOIN Department d
+ON e.dept_id = d.dept_id;
+```
+
+Result:
+
+| emp_name | dept_name |
+|---|---|
+| Alice | HR |
+| Bob | IT |
+
+John is excluded because department 30 has no matching department.
+
+### Memory
+
+```text
+INNER = only matches
+```
+
+---
+
+## 5.2 LEFT JOIN
+
+Returns:
+
+- All rows from the left table
+- Matching rows from the right table
+- `NULL` when there is no match
+
+```sql
+SELECT e.emp_name, d.dept_name
+FROM Employee e
+LEFT JOIN Department d
+ON e.dept_id = d.dept_id;
+```
+
+Result:
+
+| emp_name | dept_name |
+|---|---|
+| Alice | HR |
+| Bob | IT |
+| John | NULL |
+
+### Memory
+
+```text
+LEFT JOIN = everything from LEFT
+```
+
+---
+
+## 5.3 RIGHT JOIN
+
+Returns:
+
+- All rows from the right table
+- Matching rows from the left table
+
+```sql
+SELECT e.emp_name, d.dept_name
+FROM Employee e
+RIGHT JOIN Department d
+ON e.dept_id = d.dept_id;
+```
+
+Finance appears even though no employee belongs to department 40.
+
+### Memory
+
+```text
+RIGHT JOIN = everything from RIGHT
+```
+
+---
+
+## 5.4 FULL OUTER JOIN
+
+Returns:
+
+- All matching rows
+- Unmatched rows from the left table
+- Unmatched rows from the right table
+
+Conceptually:
+
+```text
+LEFT JOIN + RIGHT JOIN
+```
+
+Important:
+
+- PostgreSQL supports `FULL OUTER JOIN`.
+- MySQL does not natively support `FULL OUTER JOIN`; it can be simulated using `LEFT JOIN` + `UNION` + `RIGHT JOIN`.
+
+---
+
+## 5.5 CROSS JOIN
+
+Returns the **Cartesian product**.
+
+If:
+
+```text
+Table A = 3 rows
+Table B = 4 rows
+```
+
+Then:
+
+```text
+3 × 4 = 12 rows
+```
+
+Example:
+
+```sql
+SELECT *
+FROM Employee
+CROSS JOIN Department;
+```
+
+Every employee is combined with every department.
+
+---
+
+## 5.6 SELF JOIN
+
+A table is joined with itself.
+
+Example:
+
+### Employee
+
+| emp_id | emp_name | manager_id |
+|---:|---|---:|
+| 1 | Alice | NULL |
+| 2 | Bob | 1 |
+| 3 | John | 1 |
+
+Query:
+
+```sql
+SELECT
+    e.emp_name AS employee,
+    m.emp_name AS manager
+FROM Employee e
+LEFT JOIN Employee m
+ON e.manager_id = m.emp_id;
+```
+
+Result:
+
+| employee | manager |
+|---|---|
+| Alice | NULL |
+| Bob | Alice |
+| John | Alice |
+
+---
+
+## Join Summary
+
+| Join | Returns |
+|---|---|
+| INNER | Matching rows |
+| LEFT | All left + matching right |
+| RIGHT | All right + matching left |
+| FULL | All rows from both sides |
+| CROSS | Every combination |
+| SELF | Table joined with itself |
+
+---
+
+# 6. Normalization
+
+**Normalization** is the process of organizing tables to:
+
+- Reduce data redundancy
+- Avoid data anomalies
+- Improve data consistency
+- Make data easier to maintain
+
+---
+
+## 6.1 Data Anomalies
+
+There are three major anomalies.
+
+### Insert Anomaly
+
+You cannot insert some information without inserting unrelated information.
+
+Example:
+
+Suppose one table contains:
+
+| Student | Course | Instructor |
+|---|---|---|
+| Alice | DBMS | Sharma |
+| Bob | DBMS | Sharma |
+
+If a new course is created but no student has enrolled yet, it becomes difficult to store the course independently.
+
+Memory:
+
+```text
+INSERT → Can't add something independently
+```
+
+---
+
+### Update Anomaly
+
+The same information exists in multiple rows, so it must be updated everywhere.
+
+Example:
+
+| Student | Course | Instructor |
+|---|---|---|
+| Alice | DBMS | Sharma |
+| Bob | DBMS | Sharma |
+
+If Sharma changes to Raj Sharma, multiple rows must be updated.
+
+If one row is missed:
+
+| Student | Course | Instructor |
+|---|---|---|
+| Alice | DBMS | Raj Sharma |
+| Bob | DBMS | Sharma |
+
+The database becomes inconsistent.
+
+Memory:
+
+```text
+UPDATE → Repeated information → update everywhere
+```
+
+---
+
+### Delete Anomaly
+
+Deleting one record accidentally removes other useful information.
+
+Example:
+
+If John is the only student enrolled in a particular course and we delete John's enrollment, the course information may also disappear if both are stored in the same table.
+
+Memory:
+
+```text
+DELETE → Deleting one thing removes useful information
+```
+
+---
+
+# 7. Normal Forms
+
+## 7.1 First Normal Form (1NF)
+
+A table is in **1NF** if:
+
+- Each cell contains a single/atomic value.
+- There are no repeating groups or multi-valued cells.
+
+### ❌ Not 1NF
+
+| student_id | name | phone_numbers |
+|---|---|---|
+| 1 | Alice | 9876, 8765 |
+
+`phone_numbers` contains multiple values.
+
+### ✅ 1NF
+
+| student_id | name | phone |
+|---|---|---|
+| 1 | Alice | 9876 |
+| 1 | Alice | 8765 |
+
+Memory:
+
+```text
+1NF → Atomic values
+```
+
+---
+
+## 7.2 Second Normal Form (2NF)
+
+A table is in **2NF** if:
+
+1. It is in 1NF.
+2. There is no **partial dependency** of a non-key attribute on part of a composite candidate key.
+
+### What is Partial Dependency?
+
+Suppose:
+
+```text
+Enrollment(
+    student_id,
+    course_id,
+    student_name,
+    course_name,
+    marks
+)
+```
+
+Candidate key:
+
+```text
+(student_id, course_id)
+```
+
+Dependencies:
+
+```text
+student_id → student_name
+course_id → course_name
+(student_id, course_id) → marks
+```
+
+`student_name` depends only on `student_id`.
+
+`course_name` depends only on `course_id`.
+
+They depend on **part of the composite key**, not the complete key.
+
+Therefore, this violates 2NF.
+
+### Fix
+
+Split into:
+
+```text
+Student(student_id, student_name)
+
+Course(course_id, course_name)
+
+Enrollment(student_id, course_id, marks)
+```
+
+Memory:
+
+```text
+2NF → No partial dependency
+```
+
+Important:
+
+- If a table has a single-attribute candidate key, partial dependency cannot occur.
+- Therefore, a table in 1NF with only single-attribute candidate keys is automatically in 2NF.
+
+---
+
+## 7.3 Third Normal Form (3NF)
+
+A table is in **3NF** if:
+
+1. It is in 2NF.
+2. It has no problematic **transitive dependency** of non-key attributes on a key.
+
+Example:
+
+```text
+Employee(
+    emp_id,
+    emp_name,
+    dept_id,
+    dept_name
+)
+```
+
+Dependencies:
+
+```text
+emp_id → emp_name, dept_id
+dept_id → dept_name
+```
+
+Therefore:
+
+```text
+emp_id → dept_id → dept_name
+```
+
+`dept_name` indirectly depends on `emp_id` through `dept_id`.
+
+This is a transitive dependency.
+
+### Fix
+
+Split into:
+
+```text
+Employee(
+    emp_id,
+    emp_name,
+    dept_id
+)
+```
+
+```text
+Department(
+    dept_id,
+    dept_name
+)
+```
+
+Memory:
+
+```text
+3NF → No transitive dependency
+```
+
+---
+
+## 7.4 BCNF
+
+**BCNF = Boyce-Codd Normal Form**
+
+BCNF is stronger than 3NF.
+
+### Rule
+
+For every functional dependency:
+
+```text
+X → Y
+```
+
+`X` must be a **Super Key**.
+
+In simple interview language:
+
+> **Every determinant must be a candidate key/super key.**
+
+### Example
+
+```text
+Employee(
+    emp_id,
+    emp_name,
+    dept_id,
+    dept_name
+)
+```
+
+Dependencies:
+
+```text
+emp_id → emp_name, dept_id, dept_name
+dept_id → dept_name
+```
+
+`emp_id` is a key, so:
+
+```text
+emp_id → ...
+```
+
+is fine.
+
+But:
+
+```text
+dept_id → dept_name
+```
+
+is a problem because `dept_id` is not a key of the Employee table.
+
+Therefore:
+
+```text
+Employee
+```
+
+is not in BCNF.
+
+### Fix
+
+```text
+Employee(
+    emp_id,
+    emp_name,
+    dept_id
+)
+```
+
+```text
+Department(
+    dept_id,
+    dept_name
+)
+```
+
+Memory:
+
+```text
+BCNF → Every determinant must be a key
+```
+
+---
+
+## 7.5 4NF
+
+**4NF = Fourth Normal Form**
+
+A table is in 4NF when it is in BCNF and has no problematic **multivalued dependencies**.
+
+### Example
+
+Suppose:
+
+```text
+Student(student, hobby, language)
+```
+
+A student can independently have:
+
+- Multiple hobbies
+- Multiple languages
+
+Example:
+
+| Student | Hobby | Language |
+|---|---|---|
+| Alice | Singing | English |
+| Alice | Singing | Hindi |
+| Alice | Running | English |
+| Alice | Running | Hindi |
+
+This creates unnecessary combinations.
+
+### Fix
+
+Split into:
+
+```text
+Student_Hobby(student, hobby)
+```
+
+```text
+Student_Language(student, language)
+```
+
+Memory:
+
+```text
+4NF → No problematic multivalued dependency
+```
+
+---
+
+## 7.6 5NF
+
+**5NF = Fifth Normal Form**
+
+A relation is in 5NF if:
+
+- It is already in 4NF.
+- Every non-trivial join dependency is implied by candidate keys.
+- It cannot be further losslessly decomposed based on join dependencies.
+
+### Lossless Decomposition
+
+If a table is split into smaller tables, joining them back should reproduce the original information without:
+
+- Losing valid information
+- Creating incorrect/spurious rows
+
+Conceptually:
+
+```text
+Decomposed Tables
+       ↓ JOIN
+Original Information
+```
+
+### Memory
+
+```text
+5NF → Join Dependency
+```
+
+### Normalization Summary
+
+```text
+1NF  → Atomic values
+2NF  → No partial dependency
+3NF  → No transitive dependency
+BCNF → Every determinant is a super key
+4NF  → No problematic multivalued dependency
+5NF  → No problematic join dependency
+```
+
+---
+
+# 8. Transactions
+
+A **transaction** is a logical unit of work consisting of one or more database operations.
+
+Example:
+
+Transfer ₹1000 from Account A to Account B:
+
+```text
+1. Deduct ₹1000 from A
+2. Add ₹1000 to B
+```
+
+Both operations should succeed together.
+
+---
+
+# 9. ACID Properties
+
+ACID properties ensure reliable transactions.
+
+## 9.1 Atomicity
+
+> All operations happen, or none happen.
+
+Example:
+
+```text
+A: -₹1000
+B: +₹1000
+```
+
+If adding money to B fails, deduction from A should also be rolled back.
+
+Memory:
+
+```text
+Atomicity = All or Nothing
+```
+
+---
+
+## 9.2 Consistency
+
+A transaction must move the database from one valid state to another valid state.
+
+Example:
+
+If total money before transfer is:
+
+```text
+₹10,000
+```
+
+it should remain:
+
+```text
+₹10,000
+```
+
+after transferring money between accounts.
+
+Memory:
+
+```text
+Consistency = Rules remain valid
+```
+
+---
+
+## 9.3 Isolation
+
+Concurrent transactions should not incorrectly interfere with each other.
+
+Example:
+
+Two users try to update the same bank account at the same time.
+
+Isolation controls how their operations interact.
+
+Memory:
+
+```text
+Isolation = Transactions don't improperly interfere
+```
+
+---
+
+## 9.4 Durability
+
+Once a transaction is committed, its changes should survive failures such as a system crash.
+
+Memory:
+
+```text
+Durability = Committed data stays
+```
+
+---
+
+## ACID Summary
+
+| Property | Meaning |
+|---|---|
+| Atomicity | All or nothing |
+| Consistency | Database remains valid |
+| Isolation | Concurrent transactions don't improperly interfere |
+| Durability | Committed changes persist |
+
+---
+
+# 10. Concurrency
+
+**Concurrency** means multiple transactions execute at the same time or overlap in execution.
+
+Example:
+
+```text
+Transaction A ────────
+Transaction B ────────
+```
+
+Concurrency improves performance but can cause problems if not controlled.
+
+---
+
+# 11. Concurrency Problems
+
+## 11.1 Dirty Read
+
+Transaction A reads data written by Transaction B **before B commits**.
+
+Example:
+
+```text
+A updates salary: 50,000 → 70,000
+B reads 70,000
+A rolls back
+```
+
+B read data that was never permanently committed.
+
+Memory:
+
+```text
+Dirty Read = Read uncommitted data
+```
+
+---
+
+## 11.2 Non-Repeatable Read
+
+A transaction reads the same row twice and gets different values because another transaction updated it between the reads.
+
+Example:
+
+```text
+First read: 50,000
+
+Another transaction changes it to 70,000
+
+Second read: 70,000
+```
+
+Same query, different value.
+
+Memory:
+
+```text
+Non-repeatable = Same row, different value
+```
+
+---
+
+## 11.3 Phantom Read
+
+A transaction executes the same query twice and gets a different **set of rows** because another transaction inserted/deleted matching rows.
+
+Example:
+
+First query:
+
+```sql
+SELECT *
+FROM Employee
+WHERE salary > 50000;
+```
+
+Returns 5 employees.
+
+Another transaction inserts an employee with salary 60,000.
+
+Second query returns 6 employees.
+
+The new row is a **phantom row**.
+
+Memory:
+
+```text
+Phantom = New/disappearing rows
+```
+
+---
+
+# 12. Locks
+
+Locks control access to data when transactions run concurrently.
+
+## 12.1 Shared Lock (S)
+
+Used for reading.
+
+Multiple transactions can generally hold shared locks on the same item at the same time.
+
+```text
+T1 → READ
+T2 → READ
+```
+
+Both can read.
+
+---
+
+## 12.2 Exclusive Lock (X)
+
+Used when modifying data.
+
+An exclusive lock prevents conflicting concurrent access.
+
+```text
+T1 → WRITE
+```
+
+Other transactions generally cannot read/write that item in a conflicting way until the lock is released.
+
+### Memory
+
+```text
+S = Shared = Read
+X = Exclusive = Write
+```
+
+---
+
+# 13. Deadlock
+
+A **deadlock** occurs when transactions wait for each other forever.
+
+Example:
+
+```text
+T1 locks A
+T2 locks B
+
+T1 waits for B
+T2 waits for A
+```
+
+Diagram:
+
+```text
+T1 → waiting for B
+↑             ↓
+A             B
+↓             ↑
+T2 → waiting for A
+```
+
+Neither transaction can proceed.
+
+### Ways to Handle Deadlock
+
+- Deadlock detection
+- Timeout
+- Rollback one transaction
+- Prevention/avoidance strategies
+
+---
+
+# 14. Two-Phase Locking (2PL)
+
+2PL is a concurrency-control protocol.
+
+It has two phases:
+
+## Phase 1: Growing Phase
+
+- Transaction can acquire locks.
+- Transaction cannot release locks.
+
+```text
+LOCK ↑
+```
+
+## Phase 2: Shrinking Phase
+
+- Transaction can release locks.
+- Transaction cannot acquire new locks.
+
+```text
+UNLOCK ↓
+```
+
+Memory:
+
+```text
+Growing  → Acquire
+Shrinking → Release
+```
+
+---
+
+# 15. Indexes
+
+An **index** is a data structure used to make data retrieval faster.
+
+Think of an index in a book.
+
+Without index:
+
+```text
+Search page by page
+```
+
+With index:
+
+```text
+Look up topic → Go directly near the page
+```
+
+Database indexes work similarly.
+
+Example:
+
+```sql
+CREATE INDEX idx_employee_name
+ON Employee(emp_name);
+```
+
+Now queries filtering/searching by `emp_name` may be faster.
+
+---
+
+## Why Use Indexes?
+
+Indexes can improve:
+
+- `WHERE`
+- `JOIN`
+- `ORDER BY`
+- Some `GROUP BY`
+- Searching/sorting operations
+
+Example:
+
+```sql
+SELECT *
+FROM Employee
+WHERE emp_name = 'Alice';
+```
+
+An appropriate index on `emp_name` can speed up this lookup.
+
+---
+
+## Disadvantages of Indexes
+
+Indexes also have costs:
+
+- Consume storage
+- Slow down `INSERT`
+- Slow down `UPDATE`
+- Slow down `DELETE`
+- Need maintenance when indexed data changes
+
+Therefore:
+
+> **Do not blindly create indexes on every column.**
+
+---
+
+# 16. B-Tree / B+ Tree
+
+Database indexes commonly use tree-based structures.
+
+## B-Tree
+
+A balanced tree structure that keeps keys ordered and supports efficient search.
+
+## B+ Tree
+
+A commonly used variant where:
+
+- Internal nodes primarily guide searches.
+- Actual record pointers/data references are typically stored at leaf level.
+- Leaf nodes are linked, making range scans efficient.
+
+Example:
+
+```text
+          [50]
+        /      \
+     [20]      [70]
+    /   \      /   \
+  [10] [30]  [60] [80]
+```
+
+Instead of scanning every record, the database can navigate through the tree.
+
+Typical search complexity is approximately:
+
+```text
+O(log n)
+```
+
+for tree traversal, depending on the implementation and workload.
+
+---
+
+# 17. Clustered Index
+
+A **clustered index** determines the physical/logical organization of table rows according to the indexed key, depending on the database system.
+
+Important:
+
+- Exact implementation differs between DBMSs.
+- In some systems, the table itself is organized around the clustered index.
+- Usually there is only one clustered organization per table.
+
+Example concept:
+
+```text
+Rows organized by employee_id
+```
+
+---
+
+# 18. Non-Clustered Index
+
+A **non-clustered index** is a separate index structure containing indexed values and references to the corresponding table rows.
+
+Example:
+
+```text
+Index on emp_name
+```
+
+The index may look conceptually like:
+
+```text
+Alice → row reference
+Bob   → row reference
+John  → row reference
+```
+
+A table can generally have multiple non-clustered indexes, subject to DBMS limitations.
+
+---
+
+# 19. Composite Index
+
+An index created using multiple columns.
+
+Example:
+
+```sql
+CREATE INDEX idx_dept_salary
+ON Employee(dept_id, salary);
+```
+
+This can help queries such as:
+
+```sql
+WHERE dept_id = 10
+```
+
+and:
+
+```sql
+WHERE dept_id = 10
+AND salary > 50000
+```
+
+### Leftmost Prefix Rule
+
+For an index:
+
+```text
+(dept_id, salary)
+```
+
+the first column is the **leftmost** column.
+
+The index is generally most useful when the query uses the leading column(s).
+
+Think:
+
+```text
+(dept_id, salary)
+     ↑
+  starts here
+```
+
+---
+
+# 20. ER Model
+
+**ER = Entity-Relationship**
+
+The ER model is used to design databases before implementing tables.
+
+Main concepts:
+
+```text
+Entity
+Attribute
+Relationship
+Cardinality
+```
+
+---
+
+# 21. Entity
+
+An **entity** is a real-world object about which we store information.
+
+Examples:
+
+```text
+Student
+Employee
+Course
+Department
+Customer
+Product
+```
+
+Example:
+
+```text
+Student
+- student_id
+- name
+- age
+```
+
+---
+
+# 22. Attribute
+
+An **attribute** describes an entity.
+
+For Employee:
+
+```text
+Employee
+├── emp_id
+├── emp_name
+├── salary
+└── dept_id
+```
+
+These are attributes.
+
+Types commonly discussed:
+
+- Simple attribute
+- Composite attribute
+- Single-valued attribute
+- Multi-valued attribute
+- Derived attribute
+
+Example:
+
+```text
+DOB → Age
+```
+
+Age can be a derived attribute because it can be calculated from DOB.
+
+---
+
+# 23. Relationship
+
+A relationship describes how entities are associated.
+
+Example:
+
+```text
+Student ─── ENROLLS IN ─── Course
+```
+
+Another example:
+
+```text
+Employee ─── WORKS IN ─── Department
+```
+
+---
+
+# 24. Cardinality
+
+Cardinality describes how many instances of one entity can be associated with another.
+
+## 24.1 One-to-One (1:1)
+
+One person has one passport.
+
+```text
+Person 1 ─── 1 Passport
+```
+
+---
+
+## 24.2 One-to-Many (1:N)
+
+One department has many employees.
+
+```text
+Department 1 ─── N Employee
+```
+
+---
+
+## 24.3 Many-to-Many (M:N)
+
+Many students can take many courses.
+
+```text
+Student N ─── N Course
+```
+
+In a relational database, M:N relationships are usually implemented using a **junction/bridge table**.
+
+Example:
+
+```text
+Student
+   ↓
+Enrollment
+   ↓
+Course
+```
+
+### Enrollment
+
+| student_id | course_id |
+|---|---|
+| 101 | C01 |
+| 101 | C02 |
+| 102 | C01 |
+
+---
+
+# 25. Distributed Databases
+
+A **distributed database** stores data across multiple machines/nodes, often in different locations.
+
+Example:
+
+```text
+Node 1 → India
+Node 2 → USA
+Node 3 → Europe
+```
+
+The system works together as a database service.
+
+Benefits can include:
+
+- Scalability
+- Availability
+- Fault tolerance
+- Lower latency through geographic distribution
+
+Challenges:
+
+- Network failures
+- Data consistency
+- Distributed transactions
+- Replication
+- More complex system design
+
+---
+
+# 26. SQL vs NoSQL
+
+## SQL Databases
+
+Examples:
+
+- MySQL
+- PostgreSQL
+- Oracle
+- SQL Server
+
+Characteristics:
+
+- Relational/table-based
+- Structured schema
+- SQL query language
+- Strong support for relationships and joins
+- Often strong transactional guarantees
+
+Example:
+
+```text
+Student
++---------+-------+
+| id      | name  |
++---------+-------+
+| 1       | Alice |
++---------+-------+
+```
+
+---
+
+## NoSQL Databases
+
+Examples:
+
+- MongoDB
+- Cassandra
+- Redis
+- Neo4j
+
+NoSQL databases use different data models, such as:
+
+- Document
+- Key-value
+- Wide-column
+- Graph
+
+Example MongoDB-style document:
+
+```json
+{
+  "student_id": 101,
+  "name": "Alice",
+  "courses": ["DBMS", "OS"]
+}
+```
+
+### SQL vs NoSQL
+
+| Feature | SQL | NoSQL |
+|---|---|---|
+| Data model | Relational | Document/key-value/etc. |
+| Schema | Usually structured | Often more flexible |
+| Joins | Strong support | Varies by DB |
+| Scaling | Often vertical + can scale horizontally | Often designed for horizontal scaling |
+| Transactions | Strong support | Varies by database |
+| Best for | Structured/relational data | Flexible or large distributed workloads |
+
+Important:
+
+> SQL does not mean "cannot scale horizontally," and NoSQL does not mean "no transactions."
+
+The exact capabilities depend on the DBMS.
+
+---
+
+# 27. CAP Theorem
+
+CAP theorem applies to **distributed systems**.
+
+It says that when a **network partition** occurs, a distributed system cannot simultaneously guarantee both:
+
+- Strong **Consistency**
+- **Availability**
+
+while also tolerating that partition.
+
+CAP:
+
+```text
+C = Consistency
+A = Availability
+P = Partition Tolerance
+```
+
+### Consistency
+
+Every read receives the latest successful write according to the system's consistency model.
+
+Simple idea:
+
+```text
+Write X = 10
+Read → 10
+```
+
+---
+
+### Availability
+
+Every request receives a response, even if that response may not contain the newest data.
+
+---
+
+### Partition Tolerance
+
+The system continues operating despite communication failures between nodes.
+
+Example:
+
+```text
+Node A  X  Node B
+     Network Failure
+```
+
+The system must tolerate this partition.
+
+---
+
+# 28. CP
+
+**CP = Consistency + Partition Tolerance**
+
+During a network partition, the system prioritizes consistency.
+
+It may reject/delay some requests rather than return potentially stale data.
+
+Simple idea:
+
+```text
+Partition occurs
+      ↓
+Protect consistency
+      ↓
+Some requests may fail/wait
+```
+
+---
+
+# 29. AP
+
+**AP = Availability + Partition Tolerance**
+
+During a network partition, the system prioritizes availability.
+
+It continues responding, but different nodes may temporarily have different values.
+
+Later, the system can reconcile the data.
+
+Simple idea:
+
+```text
+Partition occurs
+      ↓
+Keep responding
+      ↓
+Temporary inconsistency possible
+```
+
+---
+
+# 30. Eventual Consistency
+
+**Eventual consistency** means that if no new updates continue and the system remains operational, replicas will eventually converge to the same value.
+
+Example:
+
+```text
+Node A → value = 20
+Node B → value = 15
+```
+
+After replication:
+
+```text
+Node A → 20
+Node B → 20
+```
+
+There may be a temporary period where different nodes return different values.
+
+Commonly useful when:
+
+- High availability is important
+- Temporary stale reads are acceptable
+- Large distributed systems need scalable replication
+
+---
+
+# 31. ACID vs CAP
+
+Do not confuse these concepts.
+
+### ACID
+
+Deals primarily with **transaction properties**:
+
+```text
+Atomicity
+Consistency
+Isolation
+Durability
+```
+
+### CAP
+
+Deals with **distributed systems under network partitions**:
+
+```text
+Consistency
+Availability
+Partition Tolerance
+```
+
+The word **Consistency** appears in both, but it does not mean exactly the same thing.
+
+---
+
+# 32. Quick Revision
+
+```text
+DBMS
+│
+├── Relational Model
+│   ├── Tables
+│   ├── Rows
+│   ├── Columns
+│   └── Relationships
+│
+├── Keys
+│   ├── Primary Key
+│   ├── Foreign Key
+│   ├── Candidate Key
+│   ├── Super Key
+│   ├── Alternate Key
+│   └── Composite Key
+│
+├── SQL
+│   ├── SELECT
+│   ├── INSERT
+│   ├── UPDATE
+│   ├── DELETE
+│   ├── WHERE
+│   ├── GROUP BY
+│   ├── HAVING
+│   └── ORDER BY
+│
+├── Joins
+│   ├── INNER
+│   ├── LEFT
+│   ├── RIGHT
+│   ├── FULL
+│   ├── CROSS
+│   └── SELF
+│
+├── Normalization
+│   ├── 1NF  → Atomic values
+│   ├── 2NF  → No partial dependency
+│   ├── 3NF  → No transitive dependency
+│   ├── BCNF → Every determinant is a super key
+│   ├── 4NF  → No problematic multivalued dependency
+│   └── 5NF  → No problematic join dependency
+│
+├── Transactions
+│   └── ACID
+│       ├── Atomicity
+│       ├── Consistency
+│       ├── Isolation
+│       └── Durability
+│
+├── Concurrency
+│   ├── Dirty Read
+│   ├── Non-repeatable Read
+│   ├── Phantom Read
+│   ├── Locks
+│   ├── Deadlock
+│   └── 2PL
+│
+├── Indexes
+│   ├── B-Tree / B+ Tree
+│   ├── Clustered
+│   ├── Non-Clustered
+│   └── Composite
+│
+├── ER Model
+│   ├── Entity
+│   ├── Attribute
+│   ├── Relationship
+│   └── Cardinality
+│
+└── Distributed Databases
+    ├── SQL vs NoSQL
+    ├── CAP
+    ├── CP
+    ├── AP
+    └── Eventual Consistency
+```
+
+# 33. One-Line Memory Sheet
+
+```text
+Super Key      → Uniquely identifies row
+Candidate Key  → Minimal Super Key
+Primary Key    → Selected Candidate Key
+Foreign Key    → Connects tables
+Composite Key  → Multiple columns as a key
+
+WHERE          → Filter rows
+GROUP BY       → Make groups
+HAVING         → Filter groups
+ORDER BY       → Sort
+
+INNER JOIN     → Matching rows
+LEFT JOIN      → All left rows
+RIGHT JOIN     → All right rows
+FULL JOIN      → All rows from both
+CROSS JOIN     → Every combination
+SELF JOIN      → Table with itself
+
+1NF            → Atomic
+2NF            → No partial dependency
+3NF            → No transitive dependency
+BCNF           → Every determinant is a super key
+4NF            → No problematic multivalued dependency
+5NF            → No problematic join dependency
+
+Atomicity      → All or nothing
+Consistency    → Valid state
+Isolation      → Transactions don't improperly interfere
+Durability     → Committed data stays
+
+Dirty Read     → Read uncommitted data
+Non-repeatable → Same row gives different value
+Phantom        → Different set of rows
+
+Shared Lock    → Read
+Exclusive Lock → Write
+Deadlock       → Transactions wait for each other
+2PL            → Growing then shrinking
+
+Index          → Faster lookup, extra storage/write cost
+B+ Tree        → Efficient search and range scans
+Composite      → Index on multiple columns
+
+Entity         → Real-world object
+Attribute      → Property
+Relationship    → Association
+Cardinality     → Number of associations
+
+CAP            → Consistency, Availability, Partition Tolerance
+CP             → Consistency + Partition Tolerance
+AP             → Availability + Partition Tolerance
+Eventual       → Replicas eventually converge
+```
+
+# 34. Important Interview Questions
+
+1. What is DBMS?
+2. DBMS vs RDBMS?
+3. What is a primary key?
+4. Primary key vs unique key?
+5. Primary key vs foreign key?
+6. Super key vs candidate key?
+7. What is a composite key?
+8. What is normalization?
+9. Explain 1NF, 2NF and 3NF.
+10. What is BCNF?
+11. Difference between 3NF and BCNF?
+12. What are insert, update and delete anomalies?
+13. What is a transaction?
+14. Explain ACID properties.
+15. What is a dirty read?
+16. Non-repeatable read vs phantom read?
+17. What is a deadlock?
+18. What is 2PL?
+19. What is an index?
+20. Clustered vs non-clustered index?
+21. What is a composite index?
+22. What is a B+ tree?
+23. What is an ER model?
+24. Explain 1:1, 1:N and M:N relationships.
+25. SQL vs NoSQL?
+26. What is CAP theorem?
+27. CP vs AP?
+28. What is eventual consistency?
