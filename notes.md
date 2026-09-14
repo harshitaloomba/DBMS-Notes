@@ -1733,48 +1733,52 @@ Shrinking → Release
 
 ---
 
-# 15. Indexes
+# DBMS Indexes — Complete README
 
-An **index** is a data structure used to make data retrieval faster.
+## 1. What is an Index?
 
-Think of an index in a book.
+An **index** is a data structure used by a database to **find rows faster** without scanning the entire table.
 
-Without index:
+### Without Index
 
-```text
-Search page by page
-```
-
-With index:
+Suppose we have 1 million employees:
 
 ```text
-Look up topic → Go directly near the page
+Employee Table
+     ↓
+Scan Row 1
+     ↓
+Scan Row 2
+     ↓
+Scan Row 3
+     ↓
+...
+     ↓
+Find required row
 ```
 
-Database indexes work similarly.
+This can be slow.
 
-Example:
+### With Index
+
+```text
+Query
+  ↓
+Index
+  ↓
+Find key quickly
+  ↓
+Locate required row
+```
+
+### Simple Example
 
 ```sql
-CREATE INDEX idx_employee_name
+CREATE INDEX idx_emp_name
 ON Employee(emp_name);
 ```
 
-Now queries filtering/searching by `emp_name` may be faster.
-
----
-
-## Why Use Indexes?
-
-Indexes can improve:
-
-- `WHERE`
-- `JOIN`
-- `ORDER BY`
-- Some `GROUP BY`
-- Searching/sorting operations
-
-Example:
+Now a query like:
 
 ```sql
 SELECT *
@@ -1782,107 +1786,338 @@ FROM Employee
 WHERE emp_name = 'Alice';
 ```
 
-An appropriate index on `emp_name` can speed up this lookup.
+can potentially use the index to find `Alice` faster.
 
 ---
 
-## Disadvantages of Indexes
+# 2. Why Do We Use Indexes?
 
-Indexes also have costs:
+Indexes are mainly used to improve **read/search performance**.
 
-- Consume storage
-- Slow down `INSERT`
-- Slow down `UPDATE`
-- Slow down `DELETE`
-- Need maintenance when indexed data changes
+They can help with:
 
-Therefore:
+- `WHERE`
+- `JOIN`
+- `ORDER BY`
+- `GROUP BY`
+- Range queries such as `BETWEEN`, `<`, `>`
 
-> **Do not blindly create indexes on every column.**
+### Example
+
+```sql
+SELECT *
+FROM Employee
+WHERE salary > 50000;
+```
+
+An index on `salary` can potentially make this search faster.
 
 ---
 
-# 16. B-Tree / B+ Tree
+# 3. Trade-off of Indexes
 
-Database indexes commonly use tree-based structures.
+Indexes are not free.
 
-## B-Tree
+### Advantages
 
-A balanced tree structure that keeps keys ordered and supports efficient search.
+- Faster searches
+- Faster filtering
+- Can improve JOIN performance
+- Can improve sorting/range queries
 
-## B+ Tree
+### Disadvantages
 
-A commonly used variant where:
+- Require additional storage
+- `INSERT` can become slower
+- `UPDATE` can become slower
+- `DELETE` can become slower
 
-- Internal nodes primarily guide searches.
-- Actual record pointers/data references are typically stored at leaf level.
-- Leaf nodes are linked, making range scans efficient.
+Why?
+
+Because when table data changes, the database may also need to update the indexes.
+
+### Memory Trick
+
+```text
+Index
+→ Faster READ
+→ More storage
+→ Can slow WRITE
+```
+
+---
+
+# 4. B-Tree / B+ Tree https://www.youtube.com/watch?v=BwUvgG29fPc
+
+B-Tree and B+ Tree are **data structures used to implement database indexes**.
+
+They are NOT simply "index types."
+
+```text
+Index
+  ↓
+Implementation / Data Structure
+  ↓
+B-Tree / B+ Tree
+```
+
+---
+
+# 5. B-Tree
+
+**B-Tree = Balanced Tree**
+
+It keeps keys sorted and maintains a balanced structure.
 
 Example:
 
 ```text
-          [50]
-        /      \
-     [20]      [70]
-    /   \      /   \
-  [10] [30]  [60] [80]
+              [50]
+            /      \
+         [20]       [70]
+        /    \      /    \
+     [10]   [30] [60]   [80]
 ```
 
-Instead of scanning every record, the database can navigate through the tree.
+To search for `60`:
 
-Typical search complexity is approximately:
+```text
+60 > 50
+   ↓
+Go right
+
+60 < 70
+   ↓
+Go left
+
+Found 60
+```
+
+Instead of scanning every record, the database follows the tree.
+
+### Complexity
+
+Search is approximately:
 
 ```text
 O(log n)
 ```
 
-for tree traversal, depending on the implementation and workload.
+depending on implementation and workload.
 
 ---
 
-# 17. Clustered Index
+# 6. B+ Tree
 
-A **clustered index** determines the physical/logical organization of table rows according to the indexed key, depending on the database system.
+**B+ Tree is a variant of B-Tree and is commonly used for database indexes.**
 
-Important:
+### Main Characteristics
 
-- Exact implementation differs between DBMSs.
-- In some systems, the table itself is organized around the clustered index.
-- Usually there is only one clustered organization per table.
+- Internal nodes mainly contain keys for navigation.
+- Actual record pointers/data references are stored at the leaf level.
+- Leaf nodes are linked.
+- Excellent for range scans.
 
-Example concept:
+Conceptually:
 
 ```text
-Rows organized by employee_id
+              [50]
+            /      \
+         [20]       [70]
+        /    \      /    \
+     [10]   [30] [60]   [80]
+       ↓      ↓    ↓      ↓
+     Data   Data Data   Data
+```
+
+Leaf nodes:
+
+```text
+[10] → [20] → [30] → [50] → [60] → [70] → [80]
+```
+
+### Why is this useful?
+
+For:
+
+```sql
+WHERE emp_id BETWEEN 20 AND 70
+```
+
+the database can find `20` and then follow the linked leaf nodes:
+
+```text
+20 → 30 → 50 → 60 → 70
+```
+
+So range queries are efficient.
+
+---
+
+# 7. B-Tree vs B+ Tree
+
+| Feature | B-Tree | B+ Tree |
+|---|---|---|
+| Balanced | Yes | Yes |
+| Sorted keys | Yes | Yes |
+| Data can be in internal nodes | Yes | Usually no |
+| Data pointers at leaves | Yes | Yes |
+| Leaf nodes linked | Usually no | Yes |
+| Range queries | Good | Excellent |
+| Common in database indexes | Yes | Very common |
+
+### Memory Trick
+
+```text
+B+ Tree
+→ Data at leaves
+→ Internal nodes guide search
+→ Leaves linked
+→ Great for range queries
 ```
 
 ---
 
-# 18. Non-Clustered Index
+# 8. Clustered Index
 
-A **non-clustered index** is a separate index structure containing indexed values and references to the corresponding table rows.
+A **clustered index** determines the table's row organization around the indexed key.
+
+The exact implementation is **DBMS-specific**.
 
 Example:
 
-```text
-Index on emp_name
+```sql
+CREATE CLUSTERED INDEX idx_emp_id
+ON Employee(emp_id);
 ```
 
-The index may look conceptually like:
+Conceptually, rows are organized by:
 
 ```text
-Alice → row reference
-Bob   → row reference
-John  → row reference
+101 → Alice
+102 → David
+103 → John
+104 → Sara
+105 → Bob
 ```
 
-A table can generally have multiple non-clustered indexes, subject to DBMS limitations.
+### Important
+
+Usually, a table can have **only one clustered organization**.
+
+Why?
+
+Because the table's rows cannot simultaneously be organized in multiple different ways.
+
+### Useful for
+
+- Point lookups
+- Range queries
+- Ordered access
+
+### Memory
+
+```text
+Clustered
+→ Table row organization
+→ Usually ONE
+```
 
 ---
 
-# 19. Composite Index
+# 9. Non-Clustered Index
 
-An index created using multiple columns.
+A **non-clustered index** is a separate index structure containing:
+
+```text
+Indexed Value
+      +
+Row Reference
+```
+
+Example:
+
+```sql
+CREATE NONCLUSTERED INDEX idx_emp_name
+ON Employee(emp_name);
+```
+
+Conceptually:
+
+```text
+Alice → Row Reference
+Bob   → Row Reference
+David → Row Reference
+John  → Row Reference
+Sara  → Row Reference
+```
+
+The actual table remains separate.
+
+### Search Flow
+
+```text
+Query
+  ↓
+Non-Clustered Index
+  ↓
+Find indexed value
+  ↓
+Get row reference
+  ↓
+Fetch actual row
+```
+
+### Important
+
+A table can generally have **multiple non-clustered indexes**, subject to DBMS limitations.
+
+### Memory
+
+```text
+Non-Clustered
+→ Separate index
+→ Value + Row Reference
+→ Multiple possible
+```
+
+---
+
+# 10. Clustered vs Non-Clustered
+
+| Feature | Clustered | Non-Clustered |
+|---|---|---|
+| Main idea | Organizes table rows around key | Separate index structure |
+| Relationship to table | Tied to row organization | Separate from table organization |
+| Number | Usually one | Generally multiple |
+| Row reference | DBMS-dependent | Typically present |
+| Range queries | Good | Good |
+| Implementation | DBMS-specific | DBMS-specific |
+
+### Easy Example
+
+```text
+Clustered:
+
+Index
+ ↓
+Table rows organized around key
+
+
+Non-Clustered:
+
+Separate Index
+ ↓
+Value → Row Reference
+ ↓
+Actual Table Row
+```
+
+---
+
+# 11. Composite Index
+
+A **composite index** is an index created using **multiple columns**.
 
 Example:
 
@@ -1891,40 +2126,189 @@ CREATE INDEX idx_dept_salary
 ON Employee(dept_id, salary);
 ```
 
-This can help queries such as:
+This index contains:
+
+```text
+(dept_id, salary)
+```
+
+### Useful Query
+
+```sql
+SELECT *
+FROM Employee
+WHERE dept_id = 10;
+```
+
+Also:
+
+```sql
+SELECT *
+FROM Employee
+WHERE dept_id = 10
+AND salary > 50000;
+```
+
+---
+
+# 12. Leftmost Prefix Rule
+
+For:
+
+```text
+(dept_id, salary)
+```
+
+the order matters.
+
+`dept_id` is the **leftmost column**.
+
+### Good usage
 
 ```sql
 WHERE dept_id = 10
 ```
 
-and:
+```text
+✅ Uses leading column
+```
+
+And:
 
 ```sql
 WHERE dept_id = 10
 AND salary > 50000
 ```
 
-### Leftmost Prefix Rule
-
-For an index:
-
 ```text
-(dept_id, salary)
+✅ Uses leading columns
 ```
 
-the first column is the **leftmost** column.
+### Less useful
 
-The index is generally most useful when the query uses the leading column(s).
-
-Think:
+```sql
+WHERE salary > 50000
+```
 
 ```text
-(dept_id, salary)
-     ↑
-  starts here
+⚠️ Does not use the leading dept_id column
+```
+
+The exact optimizer behavior depends on the DBMS and query, but the leftmost-prefix rule is an important general principle.
+
+### Memory
+
+```text
+Index: (A, B, C)
+
+A       → Good
+A, B    → Good
+A, B, C → Good
+
+B       → Usually less useful
+C       → Usually less useful
+B, C    → Usually less useful
 ```
 
 ---
+
+## Composite Index
+
+```sql
+CREATE INDEX idx_dept_salary
+ON Employee(dept_id, salary);
+```
+
+---
+
+## Clustered Index — SQL Server
+
+```sql
+CREATE CLUSTERED INDEX idx_emp_id
+ON Employee(emp_id);
+```
+
+---
+
+## Non-Clustered Index — SQL Server
+
+```sql
+CREATE NONCLUSTERED INDEX idx_emp_name
+ON Employee(emp_name);
+```
+
+---
+
+## Drop Index
+
+Syntax varies by DBMS.
+
+For SQL Server:
+
+```sql
+DROP INDEX idx_emp_name ON Employee;
+```
+
+---
+
+# 24. Which Index Should You Choose?
+
+### Equality Search
+
+```sql
+WHERE emp_id = 101
+```
+
+B+ Tree or hash-based indexing can be useful, depending on the DBMS and workload.
+
+### Range Search
+
+```sql
+WHERE salary BETWEEN 40000 AND 70000
+```
+
+B+ Tree is generally a good choice.
+
+### Multiple Conditions
+
+```sql
+WHERE dept_id = 10
+AND salary > 50000
+```
+
+A composite index can help:
+
+```text
+(dept_id, salary)
+```
+
+### Text Search
+
+```text
+Search inside article/product description
+```
+
+Consider:
+
+```text
+Full-Text Index
+```
+
+---
+
+
+
+# 26. Final Revision Table
+
+| Concept | Main Idea |
+|---|---|
+| **Index** | Speeds up data retrieval |
+| **B-Tree** | Balanced tree structure |
+| **B+ Tree** | Tree structure with data pointers at leaves and linked leaves |
+| **Clustered** | Determines table row organization |
+| **Non-Clustered** | Separate index with row references |
+| **Composite** | Multiple columns |
+----
 
 # 20. ER Model
 
