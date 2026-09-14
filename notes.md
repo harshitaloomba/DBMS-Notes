@@ -2461,34 +2461,436 @@ Course
 
 # 25. Distributed Databases
 
-A **distributed database** stores data across multiple machines/nodes, often in different locations.
+## What is a Distributed Database?
+
+A **distributed database** is a database where data is stored across **multiple machines/nodes**, but the system works together and appears to the user as **one database system**.
+
+```text
+                 Distributed Database
+                         │
+          ┌──────────────┼──────────────┐
+          ↓              ↓              ↓
+       Node 1          Node 2         Node 3
+       India            USA           Europe
+```
+
+The nodes communicate with each other through a network.
+
+---
+
+# Simple Example
+
+Suppose an online shopping company has users from different countries.
+
+Instead of keeping all data in one location:
+
+```text
+India users    → India Node
+USA users      → USA Node
+Europe users   → Europe Node
+```
+
+This can reduce the distance data has to travel.
+
+The user still interacts with:
+
+```text
+              One Database Service
+                     ↓
+          ┌──────────┼──────────┐
+          ↓          ↓          ↓
+       India        USA       Europe
+       Node         Node        Node
+```
+
+---
+
+# Why Use Distributed Databases?
+
+## 1. Scalability
+
+More machines can be added as the amount of data or traffic increases.
+
+```text
+More users
+    ↓
+More workload
+    ↓
+Add more nodes
+```
+
+---
+
+## 2. High Availability
+
+If one node goes down, another node may continue serving requests, depending on the system's replication/failover design.
+
+```text
+Node 1 ❌
+   ↓
+Node 2 ✅
+   ↓
+Service continues
+```
+
+---
+
+## 3. Fault Tolerance
+
+The system can continue operating even when some machines fail.
+
+This is especially possible when data is **replicated** across multiple nodes.
+
+---
+
+## 4. Lower Latency
+
+Data can be placed closer to users geographically.
 
 Example:
 
 ```text
-Node 1 → India
-Node 2 → USA
-Node 3 → Europe
+User in India
+      ↓
+India Node
+      ↓
+Less network distance
+      ↓
+Potentially lower latency
 ```
 
-The system works together as a database service.
+---
 
-Benefits can include:
+# Important Concepts
 
-- Scalability
-- Availability
+## 1. Replication
+
+**Replication = keeping copies of data on multiple nodes.**
+
+Example:
+
+```text
+User Data
+   │
+   ├──→ India Node
+   ├──→ USA Node
+   └──→ Europe Node
+```
+
+### Why?
+
+- Higher availability
 - Fault tolerance
-- Lower latency through geographic distribution
+- Faster local reads
 
-Challenges:
+But replication introduces a challenge:
 
-- Network failures
-- Data consistency
-- Distributed transactions
-- Replication
-- More complex system design
+> **How do we keep all copies consistent?**
 
 ---
+
+# 2. Sharding
+
+**Sharding = splitting data across different nodes.**
+
+Example:
+
+```text
+Node 1 → Users 1–1,000,000
+Node 2 → Users 1,000,001–2,000,000
+Node 3 → Users 2,000,001–3,000,000
+```
+
+Each node stores a **different portion** of the data.
+
+### Memory
+
+```text
+Replication → Copy data
+Sharding    → Split data
+```
+
+---
+
+# Replication vs Sharding
+
+| Feature | Replication | Sharding |
+|---|---|---|
+| Meaning | Copy data | Split data |
+| Data on nodes | Same/overlapping copies | Different portions |
+| Main benefit | Availability | Scalability |
+| Main challenge | Keeping copies consistent | Distributing/querying data |
+
+---
+
+# 3. Distributed Transactions
+
+A transaction may involve **multiple nodes**.
+
+Example:
+
+```text
+Transfer ₹10,000
+
+Node 1 → Deduct money
+Node 2 → Add money
+```
+
+Both operations should succeed together.
+
+If one succeeds and the other fails:
+
+```text
+Node 1 → ₹10,000 deducted ✅
+Node 2 → ₹10,000 added ❌
+```
+
+The system can become inconsistent.
+
+Therefore, distributed transactions are more complicated than transactions involving a single database node.
+
+---
+
+# 4. Network Failure
+
+Unlike a single-machine database, distributed databases depend heavily on the network.
+
+For example:
+
+```text
+Node 1 ←──── Network ────→ Node 2
+                    ❌
+               Network Failure
+```
+
+Node 1 may not be able to communicate with Node 2.
+
+This creates difficult questions:
+
+- Is the other node down?
+- Is only the network connection broken?
+- Which data is correct?
+- Should the system continue accepting writes?
+
+---
+
+# 5. Consistency
+
+Suppose the same data exists on multiple nodes:
+
+```text
+Node 1 → Balance = ₹1000
+Node 2 → Balance = ₹1000
+```
+
+A transaction changes it:
+
+```text
+Balance → ₹700
+```
+
+If replication is delayed:
+
+```text
+Node 1 → ₹700
+Node 2 → ₹1000
+```
+
+For a short period, different nodes may return different values.
+
+This leads to an important distributed-system trade-off between:
+
+```text
+Consistency
+Availability
+Partition Tolerance
+```
+
+This is related to the **CAP theorem**.
+
+---
+
+# Distributed Database vs Centralized Database
+
+| Feature | Centralized | Distributed |
+|---|---|---|
+| Machines | Usually one main system | Multiple nodes |
+| Data location | One location/system | Multiple locations |
+| Scalability | More limited | Can scale across nodes |
+| Fault tolerance | Lower if single point of failure | Can be higher with redundancy |
+| Network complexity | Lower | Higher |
+| System complexity | Simpler | More complex |
+
+---
+
+# Advantages
+
+### 1. Scalability
+
+Can distribute workload across multiple machines.
+
+### 2. Availability
+
+Multiple nodes can provide service when some nodes fail.
+
+### 3. Fault Tolerance
+
+Replication can protect against node failures.
+
+### 4. Geographic Distribution
+
+Data can be placed closer to users.
+
+### 5. Load Distribution
+
+Requests can be distributed across multiple nodes.
+
+---
+
+# Challenges
+
+### 1. Network Failures
+
+Nodes communicate over a network, which can fail or become slow.
+
+### 2. Data Consistency
+
+Keeping replicated data synchronized can be difficult.
+
+### 3. Distributed Transactions
+
+One transaction may involve multiple nodes.
+
+### 4. Replication
+
+Copies of data must be synchronized correctly.
+
+### 5. Complexity
+
+Designing, monitoring and debugging a distributed database is more difficult.
+
+### 6. Partition Handling
+
+The system must decide how to behave when nodes cannot communicate.
+
+---
+
+# Simple Real-Life Example
+
+Imagine a food-delivery application.
+
+Users are distributed across:
+
+```text
+India
+USA
+Europe
+```
+
+The company may have:
+
+```text
+India Server
+     ↓
+Indian users/data
+
+USA Server
+     ↓
+US users/data
+
+Europe Server
+     ↓
+European users/data
+```
+
+When a user in India places an order:
+
+```text
+User
+ ↓
+India Node
+ ↓
+Process Request
+```
+
+If important data is replicated, copies may also exist on other nodes.
+
+---
+
+# Distributed Database Flow
+
+```text
+                    Application
+                         ↓
+                   Distributed DB
+                         ↓
+          ┌──────────────┼──────────────┐
+          ↓              ↓              ↓
+       Node 1          Node 2         Node 3
+       India            USA           Europe
+          │              │              │
+          └──────────────┼──────────────┘
+                         ↓
+                    Network
+```
+
+---
+
+# Key Terms
+
+| Term | Simple Meaning |
+|---|---|
+| **Node** | A machine/server participating in the database |
+| **Replication** | Copying data to multiple nodes |
+| **Sharding** | Splitting data across nodes |
+| **Distributed Transaction** | Transaction involving multiple nodes |
+| **Consistency** | Nodes have the expected/current data |
+| **Availability** | System continues responding to requests |
+| **Fault Tolerance** | System can handle failures |
+| **Partition** | Network communication failure between nodes |
+
+---
+
+# 🧠 Important Memory Trick
+
+```text
+Distributed Database
+        ↓
+Multiple Machines
+        ↓
+Benefits:
+Scalability
+Availability
+Fault Tolerance
+Lower Geographic Latency
+
+Challenges:
+Network Failure
+Consistency
+Replication
+Distributed Transactions
+Complexity
+```
+
+### Most Important Difference
+
+```text
+Replication → COPY data
+Sharding    → SPLIT data
+```
+
+---
+
+# Interview Answer
+
+> **A distributed database stores and manages data across multiple interconnected machines or locations while presenting it as a unified database system. It provides benefits such as scalability, availability and fault tolerance, but introduces challenges like network failures, data consistency, replication and distributed transactions.**
+
+### One-Line Revision
+
+> **Distributed Database = One logical database system running across multiple physical nodes.**
+
+
+-----
 
 # 26. SQL vs NoSQL
 
