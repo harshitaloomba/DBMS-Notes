@@ -1082,132 +1082,204 @@ Memory:
 
 ## 7.6 5NF
 
-# Denormalization
+# 5NF — Fifth Normal Form
 
-**Denormalization = intentionally adding some duplicate/redundant data to make data retrieval faster.**
+## What is 5NF?
 
-Normally, **normalization** tries to remove duplicate data.
+**5NF (Fifth Normal Form)** is a normalization level that deals with **Join Dependencies (JD)**.
 
-Denormalization does the opposite **when there is a performance reason**.
+A table is in **5NF** when:
+
+- It is already in **4NF**.
+- It cannot be further decomposed into smaller tables without losing information.
+- Every **non-trivial join dependency** is implied by the **candidate keys**.
+
+### Simple Definition
+
+> **5NF removes redundancy caused by complex relationships between 3 or more attributes/tables.**
 
 ---
 
-## Example
+# Why Do We Need 5NF?
 
-Suppose we have normalized tables:
+Sometimes a table may have **no functional dependency or multivalued dependency problem**, but it can still contain redundancy because of a **join dependency**.
 
-### Employee
+5NF handles this problem.
 
-| emp_id | emp_name | dept_id |
+---
+
+# Join Dependency (JD)
+
+A **Join Dependency** means that a table can be reconstructed by joining multiple smaller tables.
+
+Suppose:
+
+```text
+R(A, B, C)
+```
+
+can be decomposed into:
+
+```text
+R1(A, B)
+R2(B, C)
+R3(A, C)
+```
+
+If joining these smaller tables gives exactly the original valid relationships, then a **join dependency** exists.
+
+---
+
+# Example
+
+Consider:
+
+### Supplier_Project_Part
+
+| Supplier | Project | Part |
 |---|---|---|
-| 1 | Alice | 10 |
-| 2 | Bob | 10 |
+| S1 | P1 | PartA |
+| S1 | P1 | PartB |
+| S1 | P2 | PartA |
+| S2 | P1 | PartA |
 
-### Department
+Suppose the business rule is:
 
-| dept_id | dept_name |
+> A supplier can supply a part to a project only when:
+>
+> - Supplier works on the Project
+> - Supplier supplies the Part
+> - Project uses the Part
+
+Then instead of storing all three relationships together, we can split them.
+
+### Supplier_Project
+
+| Supplier | Project |
 |---|---|
-| 10 | IT |
+| S1 | P1 |
+| S1 | P2 |
+| S2 | P1 |
 
-To get employee + department name, we need a **JOIN**:
+### Supplier_Part
 
-```sql
-SELECT e.emp_name, d.dept_name
-FROM Employee e
-JOIN Department d
-ON e.dept_id = d.dept_id;
-```
+| Supplier | Part |
+|---|---|
+| S1 | PartA |
+| S1 | PartB |
+| S2 | PartA |
 
-### After Denormalization
+### Project_Part
 
-We might store:
+| Project | Part |
+|---|---|
+| P1 | PartA |
+| P1 | PartB |
+| P2 | PartA |
 
-### Employee
+The original relationship can be reconstructed by joining these tables according to the business rules.
 
-| emp_id | emp_name | dept_id | dept_name |
-|---|---|---|---|
-| 1 | Alice | 10 | IT |
-| 2 | Bob | 10 | IT |
-
-Now we don't need the JOIN for this particular query.
+This is the type of complex redundancy that **5NF** deals with.
 
 ---
 
-## Why Denormalize?
+# 4NF vs 5NF
+
+| Normal Form | Main Problem Solved |
+|---|---|
+| 1NF | Repeating groups / atomic values |
+| 2NF | Partial dependency |
+| 3NF | Transitive dependency |
+| BCNF | Determinant is not a super key |
+| 4NF | Multivalued dependency |
+| 5NF | Join dependency |
+
+### Easy Memory
 
 ```text
-Normalization
-    ↓
-Less redundancy
-    ↓
-More JOINs
-    ↓
-Better data consistency
-
-Denormalization
-    ↓
-More redundancy
-    ↓
-Fewer JOINs
-    ↓
-Faster reads
+1NF → Atomic values
+2NF → Partial dependency
+3NF → Transitive dependency
+BCNF → Every determinant is a super key
+4NF → Multivalued dependency
+5NF → Join dependency
 ```
 
 ---
 
-## Advantages
+# 5NF and Lossless Decomposition
 
-- Faster **read/query performance**
-- Fewer JOINs
-- Useful for reporting and analytics
-- Can simplify frequently used queries
+A decomposition should be **lossless**.
 
----
+### Lossless means:
 
-## Disadvantages
-
-- Duplicate data
-- More storage required
-- Updates become harder
-- Higher risk of inconsistent data
-
-Example:
-
-If the department name changes:
+After splitting the table, we should be able to join the smaller tables and get back the **correct original information**.
 
 ```text
-IT → Information Technology
+Original Table
+      ↓
+Decompose
+      ↓
+Smaller Tables
+      ↓
+JOIN
+      ↓
+Original Information
 ```
 
-you may need to update it in **many Employee rows**.
+We should not get:
+
+- Missing valid rows
+- Extra/spurious rows
 
 ---
 
-## When Do We Use Denormalization?
+# Important Point
 
-Use it when:
+Do **not** define 5NF simply as:
 
-- Reads are much more frequent than writes.
-- JOINs are expensive.
-- The same data is repeatedly needed together.
-- Query performance is more important than minimizing redundancy.
+> "4NF + lossless decomposition"
 
----
+That is incomplete.
 
-## Interview Answer
+The important condition is:
 
-> **Denormalization is the process of intentionally introducing redundancy into a database to reduce JOINs and improve read performance. The trade-off is increased storage and a higher risk of data inconsistency.**
+> **5NF ensures that every non-trivial join dependency is implied by candidate keys.**
 
 ---
 
-## Easy Memory
+# When is 5NF Useful?
+
+5NF is mainly useful when:
+
+- A table has relationships involving **3 or more entities**.
+- Redundancy exists because of complex relationships.
+- Decomposing the table can remove that redundancy.
+- The decomposition remains lossless.
+
+5NF is relatively **rare in normal application databases** because most practical schemas are adequately handled by 3NF or BCNF.
+
+---
+
+# Interview Answer
+
+> **5NF, or Fifth Normal Form, deals with join dependencies. A relation is in 5NF when every non-trivial join dependency is implied by its candidate keys, so the table cannot be further losslessly decomposed to remove redundancy.**
+
+---
+
+# One-Line Revision
 
 ```text
-Normalization   → Remove redundancy
-Denormalization → Add redundancy for speed
+5NF → Removes redundancy caused by JOIN dependencies.
 ```
 
-----
+### Memory Trick
+
+```text
+4NF → Multiple independent values → MVD
+5NF → Multiple tables/relationships → JD
+```
+-----
 
 
 ### Normalization Summary
