@@ -1082,34 +1082,133 @@ Memory:
 
 ## 7.6 5NF
 
-**5NF = Fifth Normal Form**
+# Denormalization
 
-A relation is in 5NF if:
+**Denormalization = intentionally adding some duplicate/redundant data to make data retrieval faster.**
 
-- It is already in 4NF.
-- Every non-trivial join dependency is implied by candidate keys.
-- It cannot be further losslessly decomposed based on join dependencies.
+Normally, **normalization** tries to remove duplicate data.
 
-### Lossless Decomposition
+Denormalization does the opposite **when there is a performance reason**.
 
-If a table is split into smaller tables, joining them back should reproduce the original information without:
+---
 
-- Losing valid information
-- Creating incorrect/spurious rows
+## Example
 
-Conceptually:
+Suppose we have normalized tables:
 
-```text
-Decomposed Tables
-       ↓ JOIN
-Original Information
+### Employee
+
+| emp_id | emp_name | dept_id |
+|---|---|---|
+| 1 | Alice | 10 |
+| 2 | Bob | 10 |
+
+### Department
+
+| dept_id | dept_name |
+|---|---|
+| 10 | IT |
+
+To get employee + department name, we need a **JOIN**:
+
+```sql
+SELECT e.emp_name, d.dept_name
+FROM Employee e
+JOIN Department d
+ON e.dept_id = d.dept_id;
 ```
 
-### Memory
+### After Denormalization
+
+We might store:
+
+### Employee
+
+| emp_id | emp_name | dept_id | dept_name |
+|---|---|---|---|
+| 1 | Alice | 10 | IT |
+| 2 | Bob | 10 | IT |
+
+Now we don't need the JOIN for this particular query.
+
+---
+
+## Why Denormalize?
 
 ```text
-5NF → Join Dependency
+Normalization
+    ↓
+Less redundancy
+    ↓
+More JOINs
+    ↓
+Better data consistency
+
+Denormalization
+    ↓
+More redundancy
+    ↓
+Fewer JOINs
+    ↓
+Faster reads
 ```
+
+---
+
+## Advantages
+
+- Faster **read/query performance**
+- Fewer JOINs
+- Useful for reporting and analytics
+- Can simplify frequently used queries
+
+---
+
+## Disadvantages
+
+- Duplicate data
+- More storage required
+- Updates become harder
+- Higher risk of inconsistent data
+
+Example:
+
+If the department name changes:
+
+```text
+IT → Information Technology
+```
+
+you may need to update it in **many Employee rows**.
+
+---
+
+## When Do We Use Denormalization?
+
+Use it when:
+
+- Reads are much more frequent than writes.
+- JOINs are expensive.
+- The same data is repeatedly needed together.
+- Query performance is more important than minimizing redundancy.
+
+---
+
+## Interview Answer
+
+> **Denormalization is the process of intentionally introducing redundancy into a database to reduce JOINs and improve read performance. The trade-off is increased storage and a higher risk of data inconsistency.**
+
+---
+
+## Easy Memory
+
+```text
+Normalization   → Remove redundancy
+Denormalization → Add redundancy for speed
+```
+
+----
+
 
 ### Normalization Summary
 
@@ -1122,6 +1221,132 @@ BCNF → Every determinant is a super key
 5NF  → No problematic join dependency
 ```
 
+---
+
+# Denormalization
+
+**Denormalization = intentionally adding some duplicate/redundant data to make data retrieval faster.**
+
+Normally, **normalization** tries to remove duplicate data.
+
+Denormalization does the opposite **when there is a performance reason**.
+
+---
+
+## Example
+
+Suppose we have normalized tables:
+
+### Employee
+
+| emp_id | emp_name | dept_id |
+|---|---|---|
+| 1 | Alice | 10 |
+| 2 | Bob | 10 |
+
+### Department
+
+| dept_id | dept_name |
+|---|---|
+| 10 | IT |
+
+To get employee + department name, we need a **JOIN**:
+
+```sql
+SELECT e.emp_name, d.dept_name
+FROM Employee e
+JOIN Department d
+ON e.dept_id = d.dept_id;
+```
+
+### After Denormalization
+
+We might store:
+
+### Employee
+
+| emp_id | emp_name | dept_id | dept_name |
+|---|---|---|---|
+| 1 | Alice | 10 | IT |
+| 2 | Bob | 10 | IT |
+
+Now we don't need the JOIN for this particular query.
+
+---
+
+## Why Denormalize?
+
+```text
+Normalization
+    ↓
+Less redundancy
+    ↓
+More JOINs
+    ↓
+Better data consistency
+
+Denormalization
+    ↓
+More redundancy
+    ↓
+Fewer JOINs
+    ↓
+Faster reads
+```
+
+---
+
+## Advantages
+
+- Faster **read/query performance**
+- Fewer JOINs
+- Useful for reporting and analytics
+- Can simplify frequently used queries
+
+---
+
+## Disadvantages
+
+- Duplicate data
+- More storage required
+- Updates become harder
+- Higher risk of inconsistent data
+
+Example:
+
+If the department name changes:
+
+```text
+IT → Information Technology
+```
+
+you may need to update it in **many Employee rows**.
+
+---
+
+## When Do We Use Denormalization?
+
+Use it when:
+
+- Reads are much more frequent than writes.
+- JOINs are expensive.
+- The same data is repeatedly needed together.
+- Query performance is more important than minimizing redundancy.
+
+---
+
+## Interview Answer
+
+> **Denormalization is the process of intentionally introducing redundancy into a database to reduce JOINs and improve read performance. The trade-off is increased storage and a higher risk of data inconsistency.**
+
+---
+
+## Easy Memory
+
+```text
+Normalization   → Remove redundancy
+Denormalization → Add redundancy for speed
+```
 ---
 
 # 8. Transactions
