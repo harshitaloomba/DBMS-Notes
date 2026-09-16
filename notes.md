@@ -2892,82 +2892,757 @@ Sharding    → SPLIT data
 
 -----
 
-# 26. SQL vs NoSQL
+# SQL AND NoSQL — COMPLETE NOTES
 
-## SQL Databases
+---
 
-Examples:
+# 1. SQL
+
+## What is SQL?
+
+**SQL = Structured Query Language**
+
+SQL is a language used to **store, retrieve, update, and manage data** in relational databases.
+
+Examples of SQL databases:
 
 - MySQL
 - PostgreSQL
 - Oracle
 - SQL Server
 
-Characteristics:
+### Basic Idea
 
-- Relational/table-based
-- Structured schema
-- SQL query language
-- Strong support for relationships and joins
-- Often strong transactional guarantees
+```text
+SQL Database
+     ↓
+  Tables
+     ↓
+Rows + Columns
+     ↓
+Relationships
+```
+
+---
+
+# 2. Relational Database
+
+SQL databases are generally **relational databases**.
+
+Data is stored in tables.
+
+### Example
+
+```text
+Student
+
++----+-------+-----+
+| id | name  | age |
++----+-------+-----+
+| 1  | Alice | 21  |
+| 2  | Bob   | 22  |
++----+-------+-----+
+```
+
+- `id`, `name`, `age` → Columns
+- Alice/Bob records → Rows
+- `id` → can be a Primary Key
+
+Different tables can be connected using relationships.
+
+---
+
+# 3. SQL Schema
+
+A schema defines the structure of the database.
+
+Example:
+
+```sql
+CREATE TABLE Student (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    age INT
+);
+```
+
+Here we define:
+
+- Column names
+- Data types
+- Constraints
+- Relationships
+
+SQL databases generally use a **structured schema**.
+
+---
+
+# 5. Relationships in SQL
+
+SQL databases are very good at representing relationships.
 
 Example:
 
 ```text
 Student
-+---------+-------+
-| id      | name  |
-+---------+-------+
-| 1       | Alice |
-+---------+-------+
+   |
+   | enrolled in
+   ↓
+Course
+```
+
+Tables can be connected using:
+
+- Primary Key
+- Foreign Key
+- JOINs
+
+Example:
+
+```sql
+SELECT Student.name, Course.course_name
+FROM Student
+JOIN Course
+ON Student.course_id = Course.course_id;
 ```
 
 ---
 
-## NoSQL Databases
+# 6. Advantages of SQL
+
+- Structured data storage
+- Strong support for relationships
+- Powerful JOIN operations
+- Strong transaction support
+- Data integrity using constraints
+- Standardized SQL language
+- Good for complex queries
+
+---
+
+# 7. Disadvantages of SQL
+
+- Schema is generally less flexible than document-style NoSQL models.
+- Complex relational structures can require many JOINs.
+- Scaling very large workloads can require additional architecture.
+- Schema changes may require migrations.
+
+---
+
+# 8. When to Use SQL?
+
+SQL is generally suitable when:
+
+- Data is structured.
+- Relationships are important.
+- Complex JOINs are required.
+- Strong transactional behavior is needed.
+- Data integrity is important.
+- Schema is relatively stable.
+
+### Examples
+
+- Banking systems
+- Payroll systems
+- Inventory systems
+- College management systems
+- E-commerce orders
+
+---
+
+# 9. NoSQL
+
+## What is NoSQL?
+
+**NoSQL = Not Only SQL**
+
+NoSQL refers to **non-relational database systems** that use data models other than the traditional relational table model.
+
+NoSQL databases can use:
+
+- Document
+- Key-Value
+- Wide-Column
+- Graph
 
 Examples:
 
 - MongoDB
-- Cassandra
 - Redis
+- Cassandra
 - Neo4j
 
-NoSQL databases use different data models, such as:
+### Main Idea
 
-- Document
-- Key-value
-- Wide-column
-- Graph
+> **NoSQL provides flexible data models and is commonly used for large-scale or distributed workloads.**
 
-Example MongoDB-style document:
+---
+
+# 10. Document Database
+
+### Example: MongoDB
+
+Data is stored as documents, usually in a JSON-like format.
+
+Example:
 
 ```json
 {
   "student_id": 101,
   "name": "Alice",
+  "age": 21,
   "courses": ["DBMS", "OS"]
 }
 ```
 
-### SQL vs NoSQL
+Related information can be stored together.
+
+### Memory
+
+> **Document → MongoDB → JSON-like data**
+
+---
+
+# 11. Key-Value Database
+
+### Example: Redis
+
+Data is stored as:
+
+```text
+Key → Value
+```
+
+Example:
+
+```text
+"user101" → "Alice"
+"age101"  → 21
+```
+
+The key is used to retrieve the value.
+
+### Common Uses
+
+- Caching
+- Sessions
+- Fast lookups
+- Real-time applications
+
+### Memory
+
+> **Key-Value → Redis → Dictionary/Map**
+
+---
+
+# 12. Wide-Column Database
+
+### Example: Cassandra
+
+Uses a distributed wide-column data model.
+
+It is commonly used for:
+
+- Large datasets
+- Distributed systems
+- High availability
+- High-throughput workloads
+
+### Memory
+
+> **Wide-Column → Cassandra → Distributed large-scale data**
+
+---
+
+# 13. Graph Database
+
+### Example: Neo4j
+
+Stores:
+
+```text
+Nodes + Relationships
+```
+
+Example:
+
+```text
+Alice
+  |
+  | FRIENDS_WITH
+  ↓
+Bob
+  |
+  | FRIENDS_WITH
+  ↓
+Charlie
+```
+
+Useful when relationships are central to the application.
+
+### Examples
+
+- Social networks
+- Recommendation systems
+- Fraud detection
+- Network analysis
+
+### Memory
+
+> **Graph → Neo4j → Connections**
+
+---
+
+# 14. Flexible Schema
+
+NoSQL databases often provide more flexible schemas.
+
+Example:
+
+Document 1:
+
+```json
+{
+  "name": "Alice",
+  "age": 21
+}
+```
+
+Document 2:
+
+```json
+{
+  "name": "Bob",
+  "age": 22,
+  "skills": ["C++", "Java"]
+}
+```
+
+The documents do not necessarily have exactly the same fields.
+
+### Important
+
+Flexible schema **does not mean no structure at all**.
+
+The application can still enforce its own rules.
+
+---
+
+# 15. Horizontal Scaling
+
+NoSQL databases are often designed for horizontal scaling.
+
+## Vertical Scaling
+
+Make one machine more powerful.
+
+```text
+8 GB RAM
+   ↓
+64 GB RAM
+```
+
+**Vertical = Bigger machine**
+
+---
+
+## Horizontal Scaling
+
+Add more machines.
+
+```text
+        Database
+           |
+    ----------------
+    |       |      |
+  Node 1  Node 2  Node 3
+```
+
+**Horizontal = More machines**
+
+---
+
+# 16. Replication
+
+Replication means keeping copies of data on multiple nodes.
+
+```text
+          Data
+         /    \
+      Node 1  Node 2
+       Copy    Copy
+```
+
+Benefits can include:
+
+- Higher availability
+- Fault tolerance
+- Read scaling
+
+### Memory
+
+> **Replication = COPY data**
+
+---
+
+# 17. Sharding
+
+Sharding means **splitting data across multiple nodes**.
+
+Example:
+
+```text
+Users 1–1000
+     ↓
+   Node 1
+
+Users 1001–2000
+     ↓
+   Node 2
+
+Users 2001–3000
+     ↓
+   Node 3
+```
+
+### Memory
+
+> **Sharding = SPLIT data**
+
+---
+
+# 18. Advantages of NoSQL
+
+- Flexible data models
+- Horizontal scaling
+- Suitable for distributed workloads
+- Can handle very large datasets
+- Multiple data models available
+- Can provide high availability through replication
+
+---
+
+# 19. Disadvantages of NoSQL
+
+- Relationships may be less natural than in relational databases.
+- JOIN support varies between databases.
+- Data duplication may be used intentionally.
+- Consistency and transaction guarantees vary.
+- There is no single query language common to all NoSQL databases.
+- Poor data modeling can lead to inefficient queries.
+
+---
+
+# 20. When to Use NoSQL?
+
+NoSQL can be suitable when:
+
+- Data structure changes frequently.
+- Data is very large.
+- Horizontal scaling is important.
+- Workloads are distributed.
+- High throughput is required.
+- Data naturally fits a document, key-value, wide-column, or graph model.
+
+### Examples
+
+- Social media
+- Caching
+- IoT systems
+- Real-time applications
+- Recommendation systems
+- Large distributed applications
+
+---
+
+# 21. SQL vs NoSQL
 
 | Feature | SQL | NoSQL |
 |---|---|---|
-| Data model | Relational | Document/key-value/etc. |
-| Schema | Usually structured | Often more flexible |
-| Joins | Strong support | Varies by DB |
-| Scaling | Often vertical + can scale horizontally | Often designed for horizontal scaling |
-| Transactions | Strong support | Varies by database |
-| Best for | Structured/relational data | Flexible or large distributed workloads |
-
-Important:
-
-> SQL does not mean "cannot scale horizontally," and NoSQL does not mean "no transactions."
-
-The exact capabilities depend on the DBMS.
+| Meaning | Structured Query Language | Not Only SQL |
+| Database type | Relational | Non-relational / multiple data models |
+| Data model | Tables | Document, Key-Value, Wide-Column, Graph |
+| Schema | Usually structured | Often flexible |
+| Relationships | Strong support | Depends on database |
+| JOINs | Strong support | Varies |
+| Transactions | Strong support | Varies |
+| Scaling | Vertical + can support horizontal scaling | Often designed for horizontal scaling |
+| Data structure | Structured | Flexible |
+| Query language | SQL | Depends on database |
+| Distributed workloads | Supported by some SQL systems | Common design goal |
+| Examples | MySQL, PostgreSQL, Oracle | MongoDB, Redis, Cassandra, Neo4j |
 
 ---
+
+# 22. SQL Example
+
+Suppose we have:
+
+```text
+Student
++----+-------+
+| id | name  |
++----+-------+
+|101 | Alice |
++----+-------+
+```
+
+And:
+
+```text
+Enrollment
++------------+--------+
+| student_id | course |
++------------+--------+
+|101         | DBMS   |
+|101         | OS     |
++------------+--------+
+```
+
+To get Alice's courses:
+
+```sql
+SELECT Student.name, Enrollment.course
+FROM Student
+JOIN Enrollment
+ON Student.id = Enrollment.student_id;
+```
+
+SQL uses relationships and JOINs to combine information.
+
+---
+
+# 23. NoSQL Example
+
+The same information could be stored together in a document:
+
+```json
+{
+  "student_id": 101,
+  "name": "Alice",
+  "courses": [
+    "DBMS",
+    "OS"
+  ]
+}
+```
+
+The related information is stored inside one document.
+
+---
+
+# 24. Important Misconceptions
+
+## ❌ "SQL cannot scale horizontally"
+
+Wrong.
+
+SQL databases can also scale horizontally depending on the database and architecture.
+
+Examples of techniques include:
+
+- Replication
+- Sharding
+- Partitioning
+- Distributed SQL
+
+---
+
+## ❌ "NoSQL has no transactions"
+
+Wrong.
+
+Many NoSQL databases support transactions.
+
+However, the exact transaction capabilities vary by database.
+
+---
+
+## ❌ "NoSQL has no schema"
+
+Not exactly.
+
+NoSQL often means a **more flexible schema**, not the complete absence of structure.
+
+---
+
+## ❌ "NoSQL is always faster"
+
+Wrong.
+
+Performance depends on:
+
+- Query pattern
+- Data model
+- Indexes
+- Workload
+- Hardware
+- Database implementation
+- Architecture
+
+---
+
+# 25. SQL and NoSQL — Simple Example
+
+Imagine a college application.
+
+## SQL Approach
+
+```text
+Student
+   ↓
+Enrollment
+   ↓
+Course
+```
+
+Information is stored in separate related tables.
+
+```text
+Primary Key
+     ↓
+Foreign Key
+     ↓
+JOIN
+```
+
+---
+
+## NoSQL Approach
+
+A student document could contain:
+
+```json
+{
+  "id": 101,
+  "name": "Alice",
+  "courses": [
+    {
+      "name": "DBMS",
+      "teacher": "Dr. Sharma"
+    },
+    {
+      "name": "OS",
+      "teacher": "Dr. Singh"
+    }
+  ]
+}
+```
+
+Related information can be stored together.
+
+---
+
+# 26. SQL vs NoSQL — Decision Guide
+
+```text
+                    Need a database?
+                           |
+                 ---------------------
+                 |                   |
+          Structured data?      Flexible data?
+                 |                   |
+                YES                 YES
+                 |                   |
+           Relationships?       Distributed/
+                 |              large-scale?
+          ------------             |
+          |          |             |
+         YES         NO           YES
+          |          |             |
+         SQL        SQL          NoSQL*
+```
+
+`*` NoSQL is not automatically the correct choice; the workload and specific database capabilities matter.
+
+---
+
+# 28. Final Revision
+
+## SQL
+
+```text
+SQL
+ ↓
+Relational
+ ↓
+Tables
+ ↓
+Rows + Columns
+ ↓
+Relationships
+ ↓
+JOINs
+ ↓
+Structured Schema
+```
+
+### Examples
+
+```text
+MySQL
+PostgreSQL
+Oracle
+SQL Server
+```
+
+---
+
+## NoSQL
+
+```text
+NoSQL
+ ↓
+Non-Relational
+ ↓
+Multiple Data Models
+ ↓
+Document
+Key-Value
+Wide-Column
+Graph
+ ↓
+Flexible Schema
+ ↓
+Distributed / Large-Scale Workloads
+```
+
+### Examples
+
+```text
+MongoDB  → Document
+Redis    → Key-Value
+Cassandra → Wide-Column
+Neo4j    → Graph
+```
+
+---
+
+# 29. Super-Easy Memory Trick
+
+### SQL
+
+> **SQL = Tables + Relationships + JOINs**
+
+### NoSQL
+
+> **NoSQL = Flexible Models + Distributed Scaling**
+
+### Sharding vs Replication
+
+> **Sharding = SPLIT data**
+
+> **Replication = COPY data**
+
+### NoSQL Types
+
+> **MongoDB → Document**  
+> **Redis → Key-Value**  
+> **Cassandra → Wide-Column**  
+> **Neo4j → Graph**
+
+
+-----
 
 # 27. CAP Theorem
 
